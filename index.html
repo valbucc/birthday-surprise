@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Birthday Scratch & Win — Maura</title>
+<style>
+:root{--ink:#14213d;--paper:#fffaf0;--gold:#f4b942;--red:#c62828}
+*{box-sizing:border-box} body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:radial-gradient(circle at top,#fff7d6,#f2e4c4 55%,#dfcaa2);color:var(--ink);display:grid;place-items:center;padding:18px}
+.card{width:min(430px,100%);background:var(--paper);border:3px solid var(--ink);border-radius:24px;box-shadow:0 18px 50px #0003;overflow:hidden}
+.head{padding:24px 20px 18px;text-align:center;background:linear-gradient(135deg,#fff3b0,#ffd166)}
+.ticket{font-weight:950;letter-spacing:.08em;font-size:12px}.head h1{margin:7px 0 2px;font-size:29px;line-height:1}.edition{font-weight:800;margin-top:8px}.intro{padding:26px 24px;text-align:center}.intro p{line-height:1.5}.btn{border:0;border-radius:999px;background:var(--ink);color:#fff;padding:14px 22px;font-size:16px;font-weight:900;cursor:pointer;box-shadow:0 5px 0 #0003}.game{display:none;padding:18px}.hint{text-align:center;font-weight:800;margin:0 0 14px}.scratch{position:relative;height:112px;margin:14px 0;border-radius:18px;overflow:hidden;border:2px dashed #b58b28;background:#fff;box-shadow:inset 0 0 0 4px #fff7d6}
+.prize{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:10px;font-weight:950;font-size:20px;line-height:1.25}.prize small{display:block;font-size:13px;margin-top:5px}
+canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none;cursor:grab}
+.final{display:none;margin-top:18px;text-align:center;border-radius:18px;background:#fff0b8;padding:18px;border:2px solid var(--gold);animation:pop .55s ease}.final h2{margin:0 0 6px;font-size:25px}.final p{margin:6px 0;font-weight:750}
+@keyframes pop{0%{transform:scale(.75);opacity:0}100%{transform:scale(1);opacity:1}}
+.confetti{position:fixed;top:-20px;font-size:20px;pointer-events:none;animation:fall 2.8s linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.9}}
+.footer{text-align:center;padding:0 20px 20px;font-size:12px;opacity:.65}
+</style>
+</head>
+<body>
+<main class="card">
+<section class="head">
+<div class="ticket">🎟️ BIRTHDAY SCRATCH &amp; WIN 🎟️</div>
+<h1>MAURA</h1>
+<div class="edition">EDIZIONE SPECIALE DI COMPLEANNO</div>
+</section>
+
+<section class="intro" id="intro">
+<p>Questo biglietto è <b>strettamente personale</b>.<br><br>
+Premio garantito.<br><b>Dignità non garantita.</b> 😌</p>
+<button class="btn" id="start">SCOPRI IL TUO REGALO</button>
+</section>
+
+<section class="game" id="game">
+<p class="hint">☝️ Gratta con il dito tutte e tre le caselle</p>
+
+<div class="scratch">
+  <div class="prize">📍 ROMA</div>
+  <canvas aria-label="Gratta per scoprire il primo indizio"></canvas>
+</div>
+
+<div class="scratch">
+  <div class="prize">🏉 ITALIA 🇮🇹 vs GALLES 🏴<small>SEI NAZIONI</small></div>
+  <canvas aria-label="Gratta per scoprire il secondo indizio"></canvas>
+</div>
+
+<div class="scratch">
+  <div class="prize">🍻 NOI + I BOYS<br>+ ALTRI 15 PAZZI<small>Una comitiva assolutamente gestibile.</small></div>
+  <canvas aria-label="Gratta per scoprire il terzo indizio"></canvas>
+</div>
+
+<div class="final" id="final">
+<h2>🎉 BUON COMPLEANNO MAURA! 🎉</h2>
+<p>CI VEDIAMO AL SEI NAZIONI 🏉</p>
+<p>Il tuo biglietto è già pronto. ❤️</p>
+</div>
+</section>
+<div class="footer">Premio non convertibile, non cedibile e ormai impossibile da rifiutare.</div>
+</main>
+
+<script>
+const start=document.getElementById('start'),intro=document.getElementById('intro'),game=document.getElementById('game'),final=document.getElementById('final');
+start.onclick=()=>{intro.style.display='none';game.style.display='block';setupAll();};
+
+let completed=0;
+function setupAll(){document.querySelectorAll('canvas').forEach(setupScratch);}
+function setupScratch(c){
+ const box=c.parentElement, dpr=Math.max(1,window.devicePixelRatio||1);
+ const r=box.getBoundingClientRect();
+ c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr);
+ const x=c.getContext('2d'); x.scale(dpr,dpr);
+ const g=x.createLinearGradient(0,0,r.width,r.height);
+ g.addColorStop(0,'#8e9398');g.addColorStop(.22,'#e4e6e8');g.addColorStop(.5,'#9ea3a7');g.addColorStop(.78,'#f1f2f3');g.addColorStop(1,'#858a8f');
+ x.fillStyle=g;x.fillRect(0,0,r.width,r.height);
+ x.fillStyle='#34383c';x.font='900 17px system-ui';x.textAlign='center';x.textBaseline='middle';x.fillText('✦  GRATTA QUI  ✦',r.width/2,r.height/2);
+ x.globalCompositeOperation='destination-out';x.lineCap='round';x.lineJoin='round';x.lineWidth=34;
+ let down=false,last=null,strokes=0,done=false;
+ function pos(e){const q=c.getBoundingClientRect(),p=e.touches?e.touches[0]:e;return{x:p.clientX-q.left,y:p.clientY-q.top}}
+ function begin(e){e.preventDefault();down=true;last=pos(e);erase(last);c.setPointerCapture?.(e.pointerId)}
+ function move(e){if(!down)return;e.preventDefault();let p=pos(e);x.beginPath();x.moveTo(last.x,last.y);x.lineTo(p.x,p.y);x.stroke();last=p;if(++strokes%7===0)check();}
+ function end(){down=false;check()}
+ function erase(p){x.beginPath();x.arc(p.x,p.y,18,0,Math.PI*2);x.fill()}
+ function check(){
+   if(done)return;
+   const data=x.getImageData(0,0,c.width,c.height).data; let clear=0,total=0;
+   for(let i=3;i<data.length;i+=4*40){total++; if(data[i]<40)clear++}
+   if(clear/total>.46){done=true;c.style.transition='opacity .45s';c.style.opacity='0';setTimeout(()=>c.remove(),460);completed++;if(completed===3)reveal();}
+ }
+ c.addEventListener('pointerdown',begin);c.addEventListener('pointermove',move);c.addEventListener('pointerup',end);c.addEventListener('pointercancel',end);
+}
+function reveal(){
+ final.style.display='block';
+ const icons=['🎉','🏉','🇮🇹','✨','🍻'];
+ for(let i=0;i<45;i++){setTimeout(()=>{let s=document.createElement('span');s.className='confetti';s.textContent=icons[Math.floor(Math.random()*icons.length)];s.style.left=Math.random()*100+'vw';s.style.animationDuration=(2+Math.random()*2)+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),4200)},i*35)}
+}
+</script>
+</body>
+</html>
